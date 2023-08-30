@@ -87,6 +87,8 @@ def usbrelay_cmd():
 def swap_dict(d):
     swapped_d = {}
     for k, v in d.items():
+        # if len(v) > width:
+        #     width = len(v)
         if v != "" and v is not None:
             swapped_d[v] = k
     return swapped_d
@@ -121,27 +123,27 @@ def get_status(argsPort):
             continue
         print(f"{relay2port[port] : <{width}} {'on' if status == '1' else 'off'}")
         
-def change_all(argsPort,argsAction):
+def change_all(argsPort, argsAction):
     outputList = split_current_status()
     for item in outputList:
         port, status = item
         #get status for specific port
         if (argsPort != "ALL"):
             if (argsPort == relay2port[port]):
-                print_action(argsPort,argsAction)
+                set_port(argsPort,argsAction)
                 break
             continue
         #skip if relay2port value is empty
         if relay2port[port] == "":
             continue
-        print_action(relay2port[port],argsAction)
+        set_port(relay2port[port],argsAction)
         
 #argsPort is the key from port2relay
-def print_action(argsPort,argsAction):
-    print(f" {argsPort} turned {argsAction}")
+def set_port(port, setAction):
+    print(f" {port} turned {setAction}")
         
-    relay_port = port2relay[f"{argsPort}"]
-    value = argsAction
+    relay_port = port2relay[f"{port}"]
+    value = setAction
     cmd = f"usbrelay {relay_port}={'1' if value == 'on' else '0'}"
     print(f'Running this cmd: {cmd}')
            
