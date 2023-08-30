@@ -138,14 +138,13 @@ def change_all(argsPort, argsAction):
             continue
         set_port(relay2port[port],argsAction)
         
-#argsPort is the key from port2relay
-def set_port(port, setAction):
-    print(f" {port} turned {setAction}")
-        
+#port is the key from port2relay
+def set_port(port, setAction):    
     relay_port = port2relay[f"{port}"]
     value = setAction
     cmd = f"usbrelay {relay_port}={'1' if value == 'on' else '0'}"
     print(f'Running this cmd: {cmd}')
+    get_status(port)
            
 port2relay = swap_dict(relay2port)
 port2relayKeys = list(port2relay.keys())
