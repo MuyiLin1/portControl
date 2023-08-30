@@ -96,18 +96,58 @@ def print_dict(d):
     for k, v in d.items():
         print(f'"{k}": "{v}"')
         
+#returns list with format ["SNPWR", "1"]
 def split_current_status():
+    #this line will call the usbrelay -- to get the live status
     output = usbrelay_cmd()
     outputList = output.split("\n")
     lst = []
     for item in outputList:
         lst.append(item.strip().split("="))
     return lst
-    
-
+ 
+def get_status(argsPort):
+    outputList = split_current_status()
+    for item in outputList:
+        port, status = item
+        #get status for specific port
+        if (argsPort != "ALL"):
+            if (argsPort == relay2port[port]):
+                print(f"{relay2port[port] : <{width}} {'on' if status == '1' else 'off'}")
+                break
+            continue
+        #skip if relay2port value is empty
+        if relay2port[port] == "":
+            continue
+        print(f"{relay2port[port] : <{width}} {'on' if status == '1' else 'off'}")
+        
+def change_all(argsPort,argsAction):
+    outputList = split_current_status()
+    for item in outputList:
+        port, status = item
+        #get status for specific port
+        if (argsPort != "ALL"):
+            if (argsPort == relay2port[port]):
+                print_action(argsPort,argsAction)
+                break
+            continue
+        #skip if relay2port value is empty
+        if relay2port[port] == "":
+            continue
+        print_action(relay2port[port],argsAction)
+        
+#argsPort is the key from port2relay
+def print_action(argsPort,argsAction):
+    print(f" {argsPort} turned {argsAction}")
+        
+    relay_port = port2relay[f"{argsPort}"]
+    value = argsAction
+    cmd = f"usbrelay {relay_port}={'1' if value == 'on' else '0'}"
+    print(f'Running this cmd: {cmd}')
+           
 port2relay = swap_dict(relay2port)
 port2relayKeys = list(port2relay.keys())
-port2relayKeys.append("all")
+port2relayKeys.append("ALL")
 
 #made so that if it isnt correct port or state then it produces an error
 def main():
@@ -115,10 +155,11 @@ def main():
     parser = argparse.ArgumentParser(description="User end script for control all ports on the Breakout Board")
 
     # Positional argument
-    parser.add_argument("port", help="Specific port", choices=port2relayKeys)
+    parser.add_argument("port", help="Specific port", choices=port2relayKeys,type=str.upper)
     
+    #positional argument
     #CHANGE NAME STATUS TO WHATEVER SEEMS FIT
-    parser.add_argument("action", help="State of being on or off or getting the status", choices=["on","off","status"])
+    parser.add_argument("action", help="State of being on or off or getting the status", choices=["on","off","status"],type=str.lower)
     args = parser.parse_args()
     
     #default is status
@@ -128,47 +169,13 @@ def main():
     elif args.action.lower() == "off":
         value = PORT_OFF
     
-        
-    #BIG ISSUE, WHEN I CALL ALL OFF IT PRINTS IT OUT WITH ALL OF THEM AT VALUE 0
-    #WHEN I CALL A SPECIFIC PORT ON OR OFF THE REST OF THEM GO BACK TO THE OLD VALUES
     
-    #my all on/off is not changing the dictionary values
-    if args.port == "all":
-        if value == PORT_STATUS:
-            outputList = split_current_status()
-            for item in outputList:
-                port, status = item
-                #skip if relay2port value is empty
-                if relay2port[port] == "":
-                    continue
-                print(f"{relay2port[port] : <{width}} {'on' if status == '1' else 'off'}")
-                
-        #if you want you can make a list of ports you want to turn on
-        # else:
-        #     for port in port2relayKeys:
-        #         print(port)
-        #         if port == "all":
-        #             continue
-        #         port2relay[f"{port}"] = value
-        #         print(port2relay[port])
-        #     print(f"All ports turned {args.action}")
-        
-    else:
-        if value == PORT_STATUS:
-            outputList = split_current_status()
-            for item in outputList:
-                relay_port, status = item
-                if relay2port[relay_port] == args.port:
-                    print(f"{args.port} \t{'on' if status == '1' else 'off'}")
-        else:
-            relay_port = port2relay[f"{args.port}"]
-            value = args.action
-            print(f" {args.port} turned {args.action}")
-            cmd = f"usbrelay {relay_port}={'1' if value == 'on' else '0'}"
-            print(f'Running this cmd: {cmd}')
-            #Check relay port setting
-        
-            output = usbrelay_cmd()
+    if value == PORT_STATUS:
+        get_status(args.port)
+    else:  
+        change_all(args.port,args.action)
+            
+        output = usbrelay_cmd()
 
 
 
