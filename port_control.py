@@ -130,16 +130,16 @@ def set_port(argsPort, setAction):
         #get status for specific port
         if (argsPort != "ALL"):
             if (argsPort == relay2port[port]):
-                set_port(argsPort,setAction)
+                set_all_port(argsPort,setAction)
                 break
             continue
         #skip if relay2port value is empty
         if relay2port[port] == "":
             continue
-        set_port(relay2port[port],setAction)
+        set_all_port(relay2port[port],setAction)
         
 #port is the key from port2relay
-def set_port(port, setAction):    
+def set_all_port(port, setAction):    
     relay_port = port2relay[f"{port}"]
     value = setAction
     cmd = f"usbrelay {relay_port}={'1' if value == 'on' else '0'}"
