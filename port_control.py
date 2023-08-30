@@ -174,7 +174,7 @@ def main():
     if value == PORT_STATUS:
         get_status(args.port)
     else:  
-        change_all(args.port, args.action)
+        set_port(args.port, args.action)
             
         output = usbrelay_cmd()
 
